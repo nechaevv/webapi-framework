@@ -5,11 +5,11 @@ import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1}
-import ru.osfb.webapi.core.{ExecutionContextComponent, ActorMaterializerComponent}
-import ru.osfb.webapi.utils.FutureUtils._
 import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 import ru.osfb.webapi.core.{ActorMaterializerComponent, ExecutionContextComponent}
+import ru.osfb.webapi.security.{AuthenticationException, AuthenticationServiceComponent}
+import ru.osfb.webapi.utils.FutureUtils._
 
 import scala.util.{Failure, Success}
 
@@ -18,6 +18,7 @@ import scala.util.{Failure, Success}
  */
 trait SessionControllerComponent extends LazyLogging {
   this: SessionManagerComponent
+    with AuthenticationServiceComponent
     with ExecutionContextComponent
     with ActorMaterializerComponent =>
 
@@ -43,8 +44,8 @@ trait SessionControllerComponent extends LazyLogging {
       import ru.osfb.webapi.http.PlayJsonMarshallers._
       entity(as[Credentials]) { credentials =>
         onComplete((for {
-          user <- usersService.authenticate(credentials.login, credentials.password)
-          tokens <- sessionManager.create(UserSession(user, credentials.deviceId))
+          userId <- authenticationService.authenticate(credentials.login, credentials.password)
+          tokens <- sessionManager.create(UserSession(userId, credentials.deviceId))
         } yield tokens).withErrorLog(logger).withTimeLog(logger, "session/login")) {
           case Success(tokens) => complete(tokens)
           case Failure(ex: AuthenticationException) => reject(AuthorizationFailedRejection)

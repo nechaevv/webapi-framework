@@ -22,7 +22,7 @@ object XmlMarshallers {
   }
 
   implicit def nodeSeqMarshaller: ToEntityMarshaller[Node] = {
-    Marshaller.StringMarshaller.wrap(ContentType(MediaTypes.`application/xml`)) { node =>
+    Marshaller.StringMarshaller.wrap(MediaTypes.`application/xml`) { node =>
       val sw = new StringWriter()
       XML.write(sw, node, "UTF-8", xmlDecl = false, null, MinimizeMode.Always)
       sw.toString

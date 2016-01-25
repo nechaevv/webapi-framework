@@ -1,12 +1,13 @@
 package ru.osfb.webapi.http
 
-import scala.language.implicitConversions
-import akka.stream.Materializer
-import akka.http.scaladsl.marshalling.{ ToEntityMarshaller, Marshaller }
-import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
-import akka.http.scaladsl.model.{ ContentTypes, HttpCharsets }
+import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
+import akka.http.scaladsl.model.{HttpCharsets, MediaTypes}
+import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
+import akka.stream.Materializer
 import play.api.libs.json._
+
+import scala.language.implicitConversions
 
 /**
  * Created by sgl on 02.08.15.
@@ -29,7 +30,7 @@ object PlayJsonMarshallers {
   }
 
   implicit def playJsValueMarshaller: ToEntityMarshaller[JsValue] = {
-    Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(Json.stringify)
+    Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(Json.stringify)
   }
 
 }

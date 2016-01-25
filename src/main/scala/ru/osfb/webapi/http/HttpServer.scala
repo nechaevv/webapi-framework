@@ -2,14 +2,13 @@ package ru.osfb.webapi.http
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
-import ru.osfb.webapi.core.{ConfigurationComponent, ActorSystemComponent, ExecutionContextComponent}
+import ru.osfb.webapi.core.{ActorMaterializerComponent, ActorSystemComponent, ConfigurationComponent, ExecutionContextComponent}
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
 /**
@@ -25,8 +24,11 @@ trait HttpServerComponent {
   def httpServer: HttpServer
 }
 
-trait HttpServerComponentImpl extends HttpServerComponent { this: ConfigurationComponent with ActorSystemComponent with MaterializerComponent
-  with ExecutionContextComponent =>
+trait HttpServerComponentImpl extends HttpServerComponent {
+  this: ConfigurationComponent
+    with ActorSystemComponent
+    with ActorMaterializerComponent
+    with ExecutionContextComponent =>
 
   class HttpServerImpl extends HttpServer {
 
