@@ -1,10 +1,9 @@
 package ru.osfb.webapi.session
 
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1}
 import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 import ru.osfb.webapi.core.{ActorMaterializerComponent, ExecutionContextComponent}
@@ -16,25 +15,11 @@ import scala.util.{Failure, Success}
 /**
  * Created by sgl on 25.04.15.
  */
-trait SessionControllerComponent extends LazyLogging {
+trait SessionControllerComponent extends SessionDirectives with LazyLogging {
   this: SessionManagerComponent
     with AuthenticationServiceComponent
     with ExecutionContextComponent
     with ActorMaterializerComponent =>
-
-  val sessionToken: Directive1[Option[String]] = optionalHeaderValueByType[Authorization]() map (_.collect {
-    case Authorization(OAuth2BearerToken(accessToken)) => accessToken
-  })
-
-  val userSession: Directive1[UserSession] = sessionToken flatMap {
-    case Some(accessToken) => onSuccess(
-      sessionManager.find(accessToken)
-    ) flatMap {
-      case Some(s) => provide(s)
-      case None => reject(AuthorizationFailedRejection)
-    }
-    case None => reject(AuthorizationFailedRejection)
-  }
 
   implicit val credentialsReads = Json.reads[Credentials]
   implicit val refreshRequestReads = Json.reads[RefreshRequest]
@@ -45,7 +30,7 @@ trait SessionControllerComponent extends LazyLogging {
       entity(as[Credentials]) { credentials =>
         onComplete((for {
           userId <- authenticationService.authenticate(credentials.login, credentials.password)
-          tokens <- sessionManager.create(UserSession(userId, credentials.deviceId))
+          tokens <- sessionManager.create(UserSession(userId, credentials.clientToken))
         } yield tokens).withErrorLog(logger).withTimeLog(logger, "session/login")) {
           case Success(tokens) => complete(tokens)
           case Failure(ex: AuthenticationException) => reject(AuthorizationFailedRejection)
@@ -57,7 +42,7 @@ trait SessionControllerComponent extends LazyLogging {
     } ~ (post & path("refresh")) {
       import ru.osfb.webapi.http.PlayJsonMarshallers._
       entity(as[RefreshRequest]) { req => onComplete((for {
-        tokens <- sessionManager.refresh(req.refreshToken, req.deviceId)
+        tokens <- sessionManager.refresh(req.refreshToken, req.clientToken)
       } yield tokens).withErrorLog(logger).withTimeLog(logger, "session/refresh")) {
           case Success(tokens) => complete(tokens)
           case Failure(ex: NoSuchElementException) => reject(AuthorizationFailedRejection)
@@ -65,7 +50,7 @@ trait SessionControllerComponent extends LazyLogging {
             logger.error("Authentication refresh error", ex)
             complete(HttpResponse(StatusCodes.InternalServerError))
       }
-    } } ~ (post & path("logout") & sessionToken) { sessionTokenOpt =>
+    } } ~ (post & path("logout") & accessToken) { sessionTokenOpt =>
       for (sessionToken <- sessionTokenOpt) sessionManager.discard(sessionToken)
       complete(StatusCodes.NoContent)
     } ~ path("ping") { userSession { sess =>
@@ -75,5 +60,5 @@ trait SessionControllerComponent extends LazyLogging {
 
 }
 
-case class Credentials(login: String, password: String, deviceId: Option[String])
-case class RefreshRequest(refreshToken: String, deviceId: String)
+case class Credentials(login: String, password: String, clientToken: Option[String])
+case class RefreshRequest(refreshToken: String, clientToken: String)

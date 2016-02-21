@@ -21,14 +21,15 @@ trait CachedSessionManagerComponentImpl extends SessionManagerComponent {
       val key = RandomUtils.randomToken(32)
       val createOp = sessionCache += key -> session
       for {
-        refreshTokenOpt <- session.deviceId.fold[Future[Option[String]]](Future.successful(None)) { deviceId =>
+        refreshTokenOpt <- session.clientToken.fold[Future[Option[String]]](Future.successful(None)) { deviceId =>
           refreshTokensService.create(session.userId, deviceId).map(Some(_))
         }
         _ <- createOp
       } yield SessionTokens(key, refreshTokenOpt)
     }
 
-    override def find(accessToken: String): Future[Option[UserSession]] = sessionCache(accessToken)
+    override def find(accessToken: String, clientToken: Option[String]): Future[Option[UserSession]] = sessionCache(accessToken)
+        .map(_.filter(_.clientToken == clientToken))
 
     override def discard(accessToken: String): Future[Unit] = (sessionCache -= accessToken).map(_ => ())
 

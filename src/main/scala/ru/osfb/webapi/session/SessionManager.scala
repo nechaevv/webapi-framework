@@ -9,9 +9,9 @@ import scala.concurrent.Future
  */
 trait SessionManager {
   def create(userSession: UserSession): Future[SessionTokens]
-  def find(accessToken: String): Future[Option[UserSession]]
+  def find(accessToken: String, clientToken: Option[String]): Future[Option[UserSession]]
   def discard(accessToken: String): Future[Unit]
-  def refresh(refreshToken: String, deviceId: String): Future[SessionTokens]
+  def refresh(refreshToken: String, clientToken: String): Future[SessionTokens]
 }
 
 case class SessionTokens(accessToken: String, refreshToken: Option[String])

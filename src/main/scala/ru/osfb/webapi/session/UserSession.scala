@@ -5,4 +5,4 @@ import java.util.UUID
 /**
  * Created by sgl on 28.06.15.
  */
-case class UserSession(userId: UUID, deviceId: Option[String])
+case class UserSession(userId: UUID, clientToken: Option[String])
