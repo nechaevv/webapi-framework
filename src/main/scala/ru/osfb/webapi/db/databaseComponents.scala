@@ -16,7 +16,7 @@ trait DatabaseDriverComponent {
   val databaseDriver: JdbcDriver
 }
 
-trait ColumnTypes { this: DatabaseDriverComponent =>
+trait BaseColumnTypes { this: DatabaseDriverComponent =>
   import databaseDriver.api._
   implicit lazy val instantColumnType = MappedColumnType.base[Instant, Timestamp](
     i => Timestamp.from(i),

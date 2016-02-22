@@ -22,7 +22,7 @@ trait SessionControllerComponent extends SessionDirectives with LazyLogging {
     with ActorMaterializerComponent =>
 
   implicit val credentialsReads = Json.reads[Credentials]
-  implicit val refreshRequestReads = Json.reads[RefreshRequest]
+  implicit val sessionInfoWrites = Json.writes[SessionInfo]
 
   def sessionController = pathPrefix("session") {
     (post & path("login")) {
@@ -30,27 +30,16 @@ trait SessionControllerComponent extends SessionDirectives with LazyLogging {
       entity(as[Credentials]) { credentials =>
         onComplete((for {
           userId <- authenticationService.authenticate(credentials.login, credentials.password)
-          tokens <- sessionManager.create(UserSession(userId, credentials.clientToken))
-        } yield tokens).withErrorLog(logger).withTimeLog(logger, "session/login")) {
-          case Success(tokens) => complete(tokens)
+          sessionInfo <- sessionManager.create(UserSession(userId, credentials.clientToken))
+        } yield sessionInfo).withErrorLog(logger).withTimeLog(logger, "session/login")) {
+          case Success(sessionInfo) => complete(sessionInfo)
           case Failure(ex: AuthenticationException) => reject(AuthorizationFailedRejection)
           case Failure(ex) =>
             logger.error("Authentication error", ex)
             complete(HttpResponse(StatusCodes.InternalServerError))
         }
       }
-    } ~ (post & path("refresh")) {
-      import ru.osfb.webapi.http.PlayJsonMarshallers._
-      entity(as[RefreshRequest]) { req => onComplete((for {
-        tokens <- sessionManager.refresh(req.refreshToken, req.clientToken)
-      } yield tokens).withErrorLog(logger).withTimeLog(logger, "session/refresh")) {
-          case Success(tokens) => complete(tokens)
-          case Failure(ex: NoSuchElementException) => reject(AuthorizationFailedRejection)
-          case Failure(ex) =>
-            logger.error("Authentication refresh error", ex)
-            complete(HttpResponse(StatusCodes.InternalServerError))
-      }
-    } } ~ (post & path("logout") & accessToken) { sessionTokenOpt =>
+    } ~ (post & path("logout") & accessToken) { sessionTokenOpt =>
       for (sessionToken <- sessionTokenOpt) sessionManager.discard(sessionToken)
       complete(StatusCodes.NoContent)
     } ~ path("ping") { userSession { sess =>
@@ -61,4 +50,3 @@ trait SessionControllerComponent extends SessionDirectives with LazyLogging {
 }
 
 case class Credentials(login: String, password: String, clientToken: Option[String])
-case class RefreshRequest(refreshToken: String, clientToken: String)
