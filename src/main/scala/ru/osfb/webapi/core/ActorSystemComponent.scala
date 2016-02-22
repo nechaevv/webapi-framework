@@ -8,3 +8,7 @@ import akka.actor.ActorSystem
 trait ActorSystemComponent {
   implicit def actorSystem: ActorSystem
 }
+
+trait ActorSystemComponentImpl extends ActorSystemComponent { this: ConfigurationComponent =>
+  override implicit lazy val actorSystem: ActorSystem = ActorSystem("AS", configuration)
+}

@@ -12,7 +12,7 @@ trait SessionManagerService {
 }
 
 trait SessionManagerComponent {
-  def sessionManager: SessionManagerService
+  def sessionManagerService: SessionManagerService
 }
 
 case class SessionInfo(accessToken: String, tokenTtl: Int, inactiveTtl: Int)

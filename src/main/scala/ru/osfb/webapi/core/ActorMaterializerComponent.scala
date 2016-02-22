@@ -8,3 +8,7 @@ import akka.stream.ActorMaterializer
 trait ActorMaterializerComponent {
   implicit def actorMaterializer: ActorMaterializer
 }
+
+trait ActorMaterializerComponentImpl extends ActorMaterializerComponent { this: ActorSystemComponent =>
+  override implicit lazy val actorMaterializer: ActorMaterializer = ActorMaterializer()
+}

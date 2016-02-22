@@ -30,7 +30,7 @@ trait SessionControllerComponent extends SessionDirectives with LazyLogging {
       entity(as[Credentials]) { credentials =>
         onComplete((for {
           userId <- authenticationService.authenticate(credentials.login, credentials.password)
-          sessionInfo <- sessionManager.create(UserSession(userId, credentials.clientToken))
+          sessionInfo <- sessionManagerService.create(UserSession(userId, credentials.clientToken))
         } yield sessionInfo).withErrorLog(logger).withTimeLog(logger, "session/login")) {
           case Success(sessionInfo) => complete(sessionInfo)
           case Failure(ex: AuthenticationException) => reject(AuthorizationFailedRejection)
@@ -40,7 +40,7 @@ trait SessionControllerComponent extends SessionDirectives with LazyLogging {
         }
       }
     } ~ (post & path("logout") & accessToken) { sessionTokenOpt =>
-      for (sessionToken <- sessionTokenOpt) sessionManager.discard(sessionToken)
+      for (sessionToken <- sessionTokenOpt) sessionManagerService.discard(sessionToken)
       complete(StatusCodes.NoContent)
     } ~ path("ping") { userSession { sess =>
       complete(StatusCodes.NoContent)

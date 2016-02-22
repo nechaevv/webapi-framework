@@ -18,7 +18,7 @@ trait SessionDirectives { this: SessionManagerComponent with ExecutionContextCom
 
   val userSession: Directive1[UserSession] = (accessToken & clientToken) tflatMap {
     case (Some(access), client) => onSuccess(
-      sessionManager.find(access, client)
+      sessionManagerService.find(access, client)
     ) flatMap {
       case Some(s) => provide(s)
       case None => reject(AuthorizationFailedRejection)
