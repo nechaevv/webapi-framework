@@ -31,7 +31,7 @@ trait CachedSessionManagerComponentImpl extends SessionManagerComponent {
 
     private lazy val sessionCache = cacheFactory[String, UserSession]("SESSIONS", tokenTtl, inactiveTtl)
 
-    private lazy val tokenLength = configuration.getInt("session.tokenLength")
+    private lazy val tokenLength = configuration.getInt("session.token-length")
     private lazy val tokenTtl:Duration = configuration.getDuration("session.token-ttl")
     private lazy val inactiveTtl:Duration = configuration.getDuration("session.inactive-ttl")
 
