@@ -29,11 +29,11 @@ trait CachedSessionManagerComponentImpl extends SessionManagerComponent {
       sessionCache -= accessToken
     } map (_ => ())
 
-    private lazy val sessionCache = cacheFactory[String, UserSession]("SESSIONS", tokenTtl, inactiveTtl)
+    protected lazy val sessionCache = cacheFactory[String, UserSession]("SESSIONS", tokenTtl, inactiveTtl)
 
-    private lazy val tokenLength = configuration.getInt("session.token-length")
-    private lazy val tokenTtl:Duration = configuration.getDuration("session.token-ttl")
-    private lazy val inactiveTtl:Duration = configuration.getDuration("session.inactive-ttl")
+    protected lazy val tokenLength = configuration.getInt("session.token-length")
+    protected lazy val tokenTtl:Duration = configuration.getDuration("session.token-ttl")
+    protected lazy val inactiveTtl:Duration = configuration.getDuration("session.inactive-ttl")
 
   }
 
