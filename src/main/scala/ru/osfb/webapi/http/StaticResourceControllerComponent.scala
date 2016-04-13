@@ -12,7 +12,7 @@ import scala.collection.JavaConversions._
 trait StaticResourceControllerComponent { this: ConfigurationComponent with ActorSystemComponent =>
   def staticResourceController = (get & pathEndOrSingleSlash) {
     redirect(Uri("index.html"), StatusCodes.Found)
-  } ~ configuration.getConfigList("staticResources").map(pathConfig =>
+  } ~ configuration.getConfigList("static-resources").map(pathConfig =>
     (if (pathConfig.hasPath("prefix")) get & pathPrefix(pathConfig.getString("prefix")) else get) {
       getFromDirectory(pathConfig.getString("path"))
     }
