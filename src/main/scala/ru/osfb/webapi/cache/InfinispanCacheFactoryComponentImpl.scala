@@ -33,7 +33,7 @@ trait InfinispanCacheFactoryComponentImpl extends CacheFactoryComponent { this: 
       case idleTtl => provider.putAsync(kv._1, kv._2, entryTtl.toMillis, TimeUnit.MILLISECONDS,
         idleTtl.toMillis, TimeUnit.MILLISECONDS)
     }).map(_ => ())
-
+    override def listen(listener: AnyRef): Unit = provider.addListener(listener)
   }
 
   class InfinispanCacheFactory extends CacheFactory {

@@ -1,5 +1,7 @@
 package ru.osfb.webapi.session
 
+import java.util.UUID
+
 import scala.concurrent.Future
 
 /**
@@ -9,6 +11,7 @@ trait SessionManagerService {
   def create(userSession: UserSession): Future[SessionInfo]
   def find(accessToken: String, clientToken: Option[String]): Future[Option[UserSession]]
   def discard(accessToken: String): Future[Unit]
+  def discardAll(userId: UUID): Future[Unit]
 }
 
 trait SessionManagerComponent {

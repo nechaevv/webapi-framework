@@ -9,4 +9,5 @@ trait AsyncCache[K, V] {
   def apply(key: K): Future[Option[V]]
   def +=(kv: (K, V)): Future[Unit]
   def -=(key: K): Future[Option[V]]
+  def listen(listener: AnyRef): Unit
 }
