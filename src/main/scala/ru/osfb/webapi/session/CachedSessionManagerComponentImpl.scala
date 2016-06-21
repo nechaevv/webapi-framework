@@ -71,7 +71,7 @@ trait CachedSessionManagerComponentImpl extends SessionManagerComponent {
         }
       }
       @CacheEntryRemoved
-      def onRemoved(ev: CacheEntryRemovedEvent[String, UserSession]): Unit = sessionRemoved(ev.getKey, ev.getValue.userId)
+      def onRemoved(ev: CacheEntryRemovedEvent[String, UserSession]): Unit = sessionRemoved(ev.getKey, ev.getOldValue.userId)
       @CacheEntryExpired
       def onExpired(ev: CacheEntryExpiredEvent[String, UserSession]): Unit = sessionRemoved(ev.getKey, ev.getValue.userId)
     }
