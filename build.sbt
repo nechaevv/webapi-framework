@@ -15,8 +15,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-xml-experimental" % akkaVersion,
   "com.typesafe.play" %% "play-json" % "2.5.1",
   "com.typesafe.slick" %% "slick" % "3.1.1",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-  "org.infinispan" % "infinispan-core" % "8.2.1.Final"
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
+  "org.infinispan" % "infinispan-core" % "8.2.4.Final"
 )
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
