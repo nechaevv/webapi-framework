@@ -34,6 +34,13 @@ trait InfinispanCacheFactoryComponentImpl extends CacheFactoryComponent { this: 
         idleTtl.toMillis, TimeUnit.MILLISECONDS)
     }).map(_ => ())
     override def listen(listener: AnyRef): Unit = provider.addListener(listener)
+    override def cached(key: K)(fn: => Future[V]): Future[V] = apply(key) flatMap {
+      case Some(v) => Future.successful(v)
+      case None => for {
+        v <- fn
+        _ <- this += key -> v
+      } yield v
+    }
   }
 
   class InfinispanCacheFactory extends CacheFactory {
