@@ -25,7 +25,7 @@ trait CachedSessionManagerComponentImpl extends SessionManagerComponent {
     override def create(session: UserSession): Future[SessionInfo] = for {
       key <- Future { RandomUtils.randomToken(tokenLength) }
       _ <- sessionCache += key -> session
-    } yield SessionInfo(key, tokenTtl.toMillis.toInt, inactiveTtl.toMillis.toInt)
+    } yield SessionInfo(key, tokenTtl.toMillis.toInt, inactiveTtl.toMillis.toInt, session.userId)
 
     override def find(accessToken: String, clientToken: Option[String]): Future[Option[UserSession]] = {
       val result = sessionCache(accessToken).map(_.filter(_.clientToken == clientToken))

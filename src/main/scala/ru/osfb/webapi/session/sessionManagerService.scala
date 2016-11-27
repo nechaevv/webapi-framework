@@ -18,4 +18,4 @@ trait SessionManagerComponent {
   def sessionManagerService: SessionManagerService
 }
 
-case class SessionInfo(accessToken: String, tokenTtl: Int, inactiveTtl: Int)
+case class SessionInfo(accessToken: String, tokenTtl: Int, inactiveTtl: Int, userId: UUID)
